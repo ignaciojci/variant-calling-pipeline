@@ -6,7 +6,7 @@
 #SBATCH --error=logs/merge_bam_%A.err
 #SBATCH --cpus-per-task=6
 #SBATCH --mem=32G
-#SBATCH --time=06:00:00
+#SBATCH --time=12:00:00
 
 # Load necessary modules
 module load picard

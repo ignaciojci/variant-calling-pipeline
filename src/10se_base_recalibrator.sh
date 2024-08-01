@@ -1,15 +1,15 @@
 #!/bin/bash
 
 #SBATCH --account=PAS2444
-#SBATCH --job-name=haplotype_caller
-#SBATCH --output=logs/haplotype_caller_%A.out
-#SBATCH --error=logs/haplotype_caller_%A.err
+#SBATCH --job-name=base_recal
+#SBATCH --output=logs/base_recal_%A.out
+#SBATCH --error=logs/base_recal_%A.err
 #SBATCH --cpus-per-task=4
 #SBATCH --mem=16G
 #SBATCH --time=48:00:00
 
 # Load necessary modules
-module load gatk/4.4.0.0 samtools
+module load gatk/4.4.0.0
 
 # Source the config file
 source /users/PAS1286/jignacio/projects/pm/src/config.sh
@@ -22,13 +22,11 @@ project=${projects[0]}
 # Prepare the list of BAM files to merge
 projectdir="${homedir}/data/${project}"
 indir="${projectdir}/sorted"
-outdir="${projectdir}/10_output_vcf"
+outdir="${projectdir}/base_recalibrated"
 mkdir -p $outdir
 
-samtools index "${indir}/sorted.bam" 
-
-# HaplotypeCaller
-gatk --java-options "-Xmx16g" HaplotypeCaller  \
+gatk ApplyBQSR \
     -R "$ref" \
     -I "${indir}/sorted.bam" \
-    -O "${outdir}/${project}_uncalibrated.g.vcf.gz"
+    --bqsr-recal-file "${outdir}/recal_data.table" \
+    -O "${outdir}/recalibrated.bam"

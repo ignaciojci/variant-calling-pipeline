@@ -21,14 +21,14 @@ project=${projects[0]}
 
 # Prepare the list of BAM files to merge
 projectdir="${homedir}/data/${project}"
-indir="${projectdir}/sorted"
-outdir="${projectdir}/10_output_vcf"
+indir="${projectdir}/base_recalibrated"
+outdir="${projectdir}/11_output_vcf"
 mkdir -p $outdir
 
-samtools index "${indir}/sorted.bam" 
+#samtools index "${indir}/recalibrated.bam"
 
 # HaplotypeCaller
 gatk --java-options "-Xmx16g" HaplotypeCaller  \
     -R "$ref" \
-    -I "${indir}/sorted.bam" \
-    -O "${outdir}/${project}_uncalibrated.g.vcf.gz"
+    -I "${indir}/recalibrated.bam" \
+    -O "${outdir}/${project}_calibrated.g.vcf.gz"
