@@ -1,10 +1,10 @@
 #!/bin/bash
 #SBATCH --account=PAS2444
-#SBATCH --job-name=fasterq_dump
+#SBATCH --job-name=clumpify
 #SBATCH --chdir="/users/PAS1286/jignacio/projects/pm"
 #SBATCH --output=logs/%x-%A_%a.out
 #SBATCH --error=logs/%x-%A_%a.err
-#SBATCH --mem=4G
+#SBATCH --mem=8G
 #SBATCH --cpus-per-task=1
 
 # Run with:
@@ -55,34 +55,34 @@ source <(aenv --no_sniffer --data "${aenv_src_file}")
 #     done
 # done
 
-## If paired end
-# Extract fastqs
-outdir="${projectdir}/fastqs"
-mkdir -p "$outdir"
-line="${acc}"
-fasterq-dump "${projectdir}/sra/${line}" --outdir "${outdir}"
-
-# # Remove optical duplicates using clumpify
-# infolder="fastqs"
-# outfolder="deduped"
-# indir="${projectdir}/${infolder}"
-# outdir="${projectdir}/${outfolder}"
+# ## If paired end
+# # Extract fastqs
+# outdir="${projectdir}/fastqs"
 # mkdir -p "$outdir"
-# if [ $seq_type == "paired" ]; then
-#     $bbmap/clumpify.sh \
-#         -Xmx8g \
-#         dedupe \
-#         in="${indir}/${line}_1.fastq" \
-#         in2="${indir}/${line}_2.fastq" \
-#         out="${outdir}/${line}_1.fastq" \
-#         out2="${outdir}/${line}_2.fastq"
-# else
-#     $bbmap/clumpify.sh \
-#         -Xmx8g \
-#         dedupe \
-#         in="${indir}/${line}.fastq" \
-#         out="${outdir}/${line}.fastq"
-# fi
+# line="${acc}"
+# fasterq-dump "${projectdir}/sra/${line}" --outdir "${outdir}"
+
+# Remove optical duplicates using clumpify
+infolder="fastqs"
+outfolder="deduped"
+indir="${projectdir}/${infolder}"
+outdir="${projectdir}/${outfolder}"
+mkdir -p "$outdir"
+if [ $seq_type == "paired" ]; then
+    $bbmap/clumpify.sh \
+        -Xmx8g \
+        dedupe \
+        in="${indir}/${line}_1.fastq" \
+        in2="${indir}/${line}_2.fastq" \
+        out="${outdir}/${line}_1.fastq" \
+        out2="${outdir}/${line}_2.fastq"
+else
+    $bbmap/clumpify.sh \
+        -Xmx8g \
+        dedupe \
+        in="${indir}/${line}.fastq" \
+        out="${outdir}/${line}.fastq"
+fi
 
 # # Get read length distribution
 # infolder="deduped"
