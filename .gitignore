@@ -1,6 +1,8 @@
-cache/
-data/
-lib/
-envs/
-logs/
+cache/*
+data/*
+lib/*
+envs/*
+logs/*
+tmp/*
+*log*
 log.txt

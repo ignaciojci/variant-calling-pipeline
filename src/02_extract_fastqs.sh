@@ -4,11 +4,21 @@
 #SBATCH --chdir="/users/PAS1286/jignacio/projects/pm"
 #SBATCH --output=logs/%x-%A_%a.out
 #SBATCH --error=logs/%x-%A_%a.err
-#SBATCH --mem=4G
+#SBATCH --time=6:00:00
 #SBATCH --cpus-per-task=1
 
 # Run with:
-# sbatch -a 1-403 --export=project_idx=2 /users/PAS1286/jignacio/projects/pm/src/02_extract_fastqs.sh
+# sbatch -a 9-32,478-501,663 --export=project_idx=5 /users/PAS1286/jignacio/projects/pm/src/02_extract_fastqs.sh
+# sbatch -a 24-32,478-492,494-501 --export=project_idx=5 /users/PAS1286/jignacio/projects/pm/src/02_extract_fastqs.sh
+# sbatch -a 480,482-484,486,490,500,501 --export=project_idx=5 /users/PAS1286/jignacio/projects/pm/src/02_extract_fastqs.sh
+# sbatch -a 24,478,481,487,491,494-496,498-499 --export=project_idx=5 /users/PAS1286/jignacio/projects/pm/src/02_extract_fastqs.sh
+# sbatch -a 497 --export=project_idx=5 /users/PAS1286/jignacio/projects/pm/src/02_extract_fastqs.sh
+# sbatch -a 25 --export=project_idx=5 /users/PAS1286/jignacio/projects/pm/src/02_extract_fastqs.sh
+# sbatch -a 28 --export=project_idx=5 /users/PAS1286/jignacio/projects/pm/src/02_extract_fastqs.sh
+# sbatch -a 32 --export=project_idx=5 /users/PAS1286/jignacio/projects/pm/src/02_extract_fastqs.sh
+# sbatch -a 29 --export=project_idx=5 /users/PAS1286/jignacio/projects/pm/src/02_extract_fastqs.sh
+# sbatch -a 479 --export=project_idx=5 /users/PAS1286/jignacio/projects/pm/src/02_extract_fastqs.sh
+# sbatch -a 488 --export=project_idx=5 /users/PAS1286/jignacio/projects/pm/src/02_extract_fastqs.sh
 
 set -e -u -o pipefail -x
 
@@ -28,8 +38,8 @@ fi
 # Define project path
 project="${projects[${project_idx}]}"
 projectdir="${homedir}/data/${project}"
-task_id=$SLURM_ARRAY_TASK_ID
 seq_type=${projects_seq_type[${project_idx}]}
+task_id=$SLURM_ARRAY_TASK_ID
 
 # Define env variables 'acc' in aenv_src_file
 aenv_src_file="${projectdir}/SraAccList.csv.tmp"
