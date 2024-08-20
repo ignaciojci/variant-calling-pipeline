@@ -1,23 +1,23 @@
 #!/bin/bash
 #SBATCH --account=PAS2444
-#SBATCH --job-name=genomics_db_import
+#SBATCH --job-name=interval_genomics_db_import
 #SBATCH --chdir="/users/PAS1286/jignacio/projects/pm"
 #SBATCH --output=logs/%x-%A_%a.out
 #SBATCH --error=logs/%x-%A_%a.err
 #SBATCH --cpus-per-task=2
-#SBATCH --time=168:00:00
+#SBATCH --time=24:00:00
 
 # Run with:
-# sbatch -a 1-8 --export=project_idx=0 /users/PAS1286/jignacio/projects/pm/src/08_genomics_db_import.sh
-# sbatch -a 1-8 --export=project_idx=1 /users/PAS1286/jignacio/projects/pm/src/08_genomics_db_import.sh
-# sbatch -a 1-8 --export=project_idx=2 /users/PAS1286/jignacio/projects/pm/src/08_genomics_db_import.sh
-# sbatch -a 1-8 --export=project_idx=3 /users/PAS1286/jignacio/projects/pm/src/08_genomics_db_import.sh
-# sbatch -a 1-8 --export=project_idx=4 /users/PAS1286/jignacio/projects/pm/src/08_genomics_db_import.sh
-# sbatch -a 1-8 --export=project_idx=5 /users/PAS1286/jignacio/projects/pm/src/08_genomics_db_import.sh
-# sbatch -a 1-8 --export=project_idx=6 /users/PAS1286/jignacio/projects/pm/src/08_genomics_db_import.sh
+# sbatch -a 1-281 --export=project_idx=0 /users/PAS1286/jignacio/projects/pm/src/08.1_genomics_db_import.sh
+# sbatch -a 1-281 --export=project_idx=1 /users/PAS1286/jignacio/projects/pm/src/08.1_genomics_db_import.sh
+# sbatch -a 1-281 --export=project_idx=2 /users/PAS1286/jignacio/projects/pm/src/08.1_genomics_db_import.sh
+# sbatch -a 1-281 --export=project_idx=3 /users/PAS1286/jignacio/projects/pm/src/08.1_genomics_db_import.sh
+# sbatch -a 1-281 --export=project_idx=4 /users/PAS1286/jignacio/projects/pm/src/08.1_genomics_db_import.sh
+# sbatch -a 1-281 --export=project_idx=5 /users/PAS1286/jignacio/projects/pm/src/08.1_genomics_db_import.sh
+# sbatch -a 1-281 --export=project_idx=6 /users/PAS1286/jignacio/projects/pm/src/08.1_genomics_db_import.sh
 #
 # tail logs/genomics_db_import-32401873.err
-# sbatch -a 1 --export=project_idx=3 /users/PAS1286/jignacio/projects/pm/src/08_genomics_db_import.sh
+# sbatch -a 1-10 --export=project_idx=0 /users/PAS1286/jignacio/projects/pm/src/08.1_genomics_db_import.sh
 
 set -e -u -o pipefail -x
 
@@ -39,8 +39,8 @@ project="${projects[${project_idx}]}"
 projectdir="${homedir}/data/${project}"
 seq_type="${projects_seq_type[${project_idx}]}"
 
-indir="${projectdir}/07_output_vcf_uncalibrated"
-outdir="${homedir}/data/genomicsdb"
+indir="${homedir}/data/*/07_output_vcf_uncalibrated"
+outdir="${homedir}/data/genomicsdb_935"
 mkdir -p $outdir
 
 
@@ -93,18 +93,21 @@ for vcf in $vcf_files; do
 done
 
 
-chrnum=($(seq -f "%02g" 0 7))
-idx=$(( $SLURM_ARRAY_TASK_ID - 1))
-j=${chrnum[$idx]}
+#chrnum=($(seq -f "%02g" 0 7))
+#idx=$(( $SLURM_ARRAY_TASK_ID - 1))
+#j=${chrnum[$idx]}
+interval_num=$SLURM_ARRAY_TASK_ID
+intervals_file="/users/PAS1286/jignacio/projects/pm/data/843B-2Mbp-intervals.txt"
+source <(aenv --no_sniffer --data "${intervals_file}")
 #for j in $(seq -f "%02g" 0 7); do \
-gdb=${outdir}/chr${j}_gdb
+gdb=${outdir}/interval_${interval_num}_gdb
 if [ -d "$gdb" ]; then
   echo "Genomics db exists."
-  gdbws="--genomicsdb-update-workspace-path"
+  # gdbws="--genomicsdb-update-workspace-path"
   # Back up genomics db
-  cp -r $gdb ${gdb}_${SLURM_ARRAY_JOB_ID}_bak
-  # rm -r "$gdb"
-  # gdbws="--genomicsdb-workspace-path"
+  # cp -r $gdb ${gdb}_${SLURM_ARRAY_JOB_ID}_bak
+  rm -r "$gdb"
+  gdbws="--genomicsdb-workspace-path"
 else
   echo "Genomics db does not exists."
   gdbws="--genomicsdb-workspace-path"
@@ -116,7 +119,7 @@ gatk --java-options "-Djava.io.tmpdir=$tmpdir/tmp -Xms2G -Xmx2G -XX:ParallelGCTh
   --batch-size 50 \
   --tmp-dir "$tmpdir/tmp" \
   --max-num-intervals-to-import-in-parallel 3 \
-  --intervals Chr${j} \
+  --intervals $interval \
   --reader-threads 5
 #done
 

@@ -5,3 +5,5 @@ projects_seq_type=("paired" "paired" "single" "single" "paired" "paired" "single
 projects_aligner=("bwa" "bwa" "bwa" "bwa" "bwa" "bwa" "bowtie2")
 ref="/users/PAS1286/jignacio/projects/pm/data/refs/843B/PearlMillet.843B.CHROMOSOMES.fasta"
 bbmap="/users/PAS1286/jignacio/projects/pm/lib/bbmap"
+
+export PICARD=${homedir}/lib/picard.jar

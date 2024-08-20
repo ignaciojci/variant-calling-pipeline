@@ -52,7 +52,8 @@ collapse_intervals <- function(nums) {
   
   return(paste(result, collapse = ","))
 }
-
+nums <- c(1,16 ,17 ,21 ,24 ,25 ,26 ,28 ,33 ,230,238,245,439,448,453,456,462,463,465,469,479,480,490,496,498,502,504,505,506,514)
+collapse_intervals(nums)
 p6 <- df %>% 
   filter(grepl("^06_",V5)) %>%
   arrange(desc(V1)) %>%
