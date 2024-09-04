@@ -1,0 +1,21 @@
+Bootstrap: docker
+From: python:2.7.18
+
+%post
+    # Update and install dependencies
+    apt-get update && apt-get install -y \
+        build-essential \
+        wget \
+        libgsl0-dev \
+	libgsl-dev
+
+    # Install Python packages
+    pip2.7 install numpy scipy cython
+
+%environment
+    export PATH=/usr/bin:$PATH
+    export PYTHONPATH=/usr/lib/python2.7/site-packages:$PYTHONPATH
+
+%runscript
+    exec python "$@"
+

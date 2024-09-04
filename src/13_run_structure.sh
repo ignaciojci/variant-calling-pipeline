@@ -26,7 +26,7 @@ cd /users/PAS1286/jignacio/projects/pm/data/12_merged_vcf/tmp
 mkdir -p "$input"
 
 singularity exec --bind "$HOME:$HOME" --bind "/fs:/fs" \
-  /users/PAS1286/jignacio/containers/fs_again.sif \
+  /users/PAS1286/jignacio/projects/pm/lib/fs_again.sif \
   /usr/local/bin/python2.7 \
   /users/PAS1286/jignacio/projects/pm/lib/fastStructure/structure.py \
   -K ${k} \
