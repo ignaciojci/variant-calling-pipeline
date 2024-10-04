@@ -6,7 +6,7 @@ library(stringr)
 library(dplyr)
 library(ggplot2)
 
-files <- list.files(pattern = "*.txt")
+files <- list.files(pattern = "summary.*.txt")
 file=files[1]
 #df <- read.table(file, sep="\t", header=T)
 df <- lapply(files, read.table, sep="\t", header=T)
@@ -24,7 +24,7 @@ vcf_list <- read.table("../bam_with_read_groups_list.txt")
 # Define the array of file paths
 file_paths <- vcf_list$V1
 # Extract the project and sample
-project <- str_extract(file_paths, "(?<=data/)[^/]+")x
+project <- str_extract(file_paths, "(?<=data/)[^/]+")
 sample <- str_extract(file_paths, "(?<=07_output_vcf_uncalibrated/)[^/]+(?=\\.g\\.vcf\\.gz)")
 
 # Create a data frame
@@ -39,4 +39,21 @@ str(lj)
 ggplot(lj, aes(x=project, y=Proportion.Missing)) + geom_boxplot() +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 plot(density(lj$Proportion.Missing))
-       
+
+high_call_rate_lines <- lj %>%
+  filter(Proportion.Missing < 0.04) %>%
+  select(Taxa.Name)
+
+write.table(high_call_rate_lines, "lines_with_call_rate_over_95.txt", row.names = F, col.names = F, quote = F)
+
+hcr_dart <- lj %>%
+  filter(project == "PM_DArT") %>%
+  arrange(Proportion.Missing)
+plot(hcr_dart$Proportion.Missing, type="o")
+
+hcr_dart_lines <- hcr_dart %>%
+  filter(Proportion.Missing < 0.7) %>%
+  select(Taxa.Name)
+write.table(hcr_dart_lines, "dart_lines_with_call_rate_over_30.txt", row.names = F, col.names = F, quote = F)
+
+# /users/PAS1286/jignacio/projects/pm/data/12_merged_vcf/lines_with_call_rate_over_95.txt
