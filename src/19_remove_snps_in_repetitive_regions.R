@@ -1,5 +1,5 @@
 rm(list=ls())
-setwd("/fs/scratch/PAS2444/jignacio/2024/pm/data/d17_filtered_high_call_rate_vcf_stats/")
+setwd("/fs/scratch/PAS2444/jignacio/2024/pm/data/17_filtered_high_call_rate_vcf_stats/")
 
 library(IRanges)
 library(stringr)
@@ -34,6 +34,7 @@ df <- df %>%
 
 flank_bp_size <- 25
 snps <- read.csv("maf20_callrate95_2141704_snps.csv")
+#snps <- read.csv("maf30_callrate95_746435_snps.csv")
 str(snps)
 
 snps <- snps %>%

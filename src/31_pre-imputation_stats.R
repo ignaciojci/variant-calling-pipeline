@@ -82,3 +82,20 @@ ggplot(data = df, aes(y = as.numeric(Var1), x = as.numeric(Var2))) +
   xlab("1,000 randomly sampled markers") + ylab("lines") +
   ggtitle("Plot of missing genotypes. Lines from top to bottom: 147 high-call rate lines, 798 PM_DArT lines, and 838 other lines")
 
+(tab <- table(vcfs[[1]]@snps$chr))
+tab <- tab[-1]
+barplot(tab, main="Distribution of 94k SNPs across the 7 chromosomes")
+
+dat <- vcfs[[1]]
+plot(density(dat@snps %>%
+          filter(chr=="Chr01") %>%
+          pull(pos)))
+
+# Create the density plot faceted by chromosome
+ggplot(dat@snps %>%
+         filter(chr != "Chr00"), aes(x = pos/1e6)) +
+  geom_density() +
+  facet_wrap(~ chr, scales = "free") +
+  theme_minimal() +
+  labs(x = "Position (Mb)", y = "Density", title = "Density Plot of Positions by Chromosome")
+

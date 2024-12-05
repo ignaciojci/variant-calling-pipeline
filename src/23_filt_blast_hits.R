@@ -1,4 +1,4 @@
-setwd("/fs/scratch/PAS2444/jignacio/2024/pm/data/d20_blast_flanks/")
+setwd("/fs/scratch/PAS2444/jignacio/2024/pm/data/20_blast_flanks/")
 
 list.files()
 # Load necessary library
@@ -10,7 +10,7 @@ library(parallel)
 side="right"
 x <- 1
 x <- Sys.getenv("SLURM_ARRAY_TASK_ID")
-outdir <- "/users/PAS1286/jignacio/projects/pm/data/d22_unique_blast_hits/"
+outdir <- "/users/PAS1286/jignacio/projects/pm/data/22_unique_blast_hits/"
 dir.create(outdir, showWarnings = F)
 
 get_snps_with_one_hit <- function(side, x){

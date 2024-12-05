@@ -1,4 +1,4 @@
-setwd("/fs/scratch/PAS2444/jignacio/2024/pm/data/d17_filtered_high_call_rate_vcf_stats/")
+setwd("/fs/scratch/PAS2444/jignacio/2024/pm/data/17_filtered_high_call_rate_vcf_stats/")
 
 library(stringr)
 library(dplyr)
@@ -49,9 +49,10 @@ load("all_stats_2.Rdata")
 str(dfout)
 
 tab <- table(dfout$CHROM)
-barplot(tab, main="Step 1: Histogram of chromosomes")
+barplot(tab[-1]/1e6, main="Step 0: Histogram of chromosomes (in million SNPs)")
 plot(density(dfout$MINOR_ALLELE_FREQ), main="Step 1: Density plot of minor allele frequency")
-abline(v=0.05, lty=2)
+#abline(v=0.05, lty=2)
+abline(v=0.20, lty=2)
 
 values <- dfout$MINOR_ALLELE_FREQ
 intervals <- 0:10/20
@@ -69,37 +70,45 @@ with(dfout,hist(MINOR_ALLELE_FREQ))
 
 # Distance to next SNP
 filt_tmp <- dfout %>%
+  #filter(MINOR_ALLELE_FREQ > 0.05) %>%
   filter(MINOR_ALLELE_FREQ > 0.05) %>%
   mutate(DIST_TO_PREV_SNP = POS - c(NA,POS[-length(POS)]),
          DIST_TO_NEXT_SNP = c(DIST_TO_PREV_SNP[-1],NA))
 
 filt01 <- filt_tmp %>%
-  filter(MINOR_ALLELE_FREQ > 0.05)
+  #filter(MINOR_ALLELE_FREQ > 0.05)
+  filter(MINOR_ALLELE_FREQ > 0.2)
 dim(filt01)
 
 tab <- table(filt01$CHROM)
-barplot(tab, main="Step 2: Histogram of chromosomes")
+barplot(tab[-1]/1e3, main="Step 1: Histogram of chromosomes (in thousands SNPs)")
 plot(density(filt01$F_MISS), main="Step 2: Density plot of missing proportion")
-abline(v=0.7, lty=2)
+abline(v=0.05, lty=2)
 
 filt02 <- filt01 %>%
-  filter(F_MISS < 1.0)
+  #filter(F_MISS < 1.0)
+  filter(F_MISS < 0.05)
 sp <- str_split_fixed(filt02$OBS.HOM1.HET.HOM2, "/", 3)
 sp <- apply(sp,2,as.numeric)
 filt02$F_HET <- sp[,2] / (sp[,1] + sp[,3])
 filt02$NEGLOG10_P_HWE <- -log10(filt02$P_HWE)
+dim(filt02)
 
 tab <- table(filt02$CHROM)
-barplot(tab, main="Step 3: Histogram of chromosomes")
+barplot(tab[-1]/1e3, main="Step 2: Histogram of chromosomes (in thousands SNPs)")
 plot(density(filt02$NEGLOG10_P_HWE), main="Step 3: Density plot of -log10(HWE p-value)")
 plot(density(filt02$F_HET), main="Step 3: Density plot of heterozygous proportion")
 
+plot(density(log10(filt02$DIST_TO_PREV_SNP)), main="Step 3: Density plot distance to previous/next SNP")
+abline(v=log10(5), lty=2)
+
 filt03 <- filt02 %>%
-  filter(DIST_TO_PREV_SNP > 2,
-         DIST_TO_NEXT_SNP > 2)
-dim(filt03)
+  # filter(DIST_TO_PREV_SNP > 6,
+  #        DIST_TO_NEXT_SNP > 6)
+  filter(DIST_TO_PREV_SNP > 5,
+         DIST_TO_NEXT_SNP > 5); dim(filt03)
 tab <- table(filt03$CHROM)
-barplot(tab, main="Step 4: Histogram of chromosomes")
+barplot(tab[-1]/1e3, main="Step 3: Histogram of chromosomes (in thousands SNPs)")
 
 write.csv(filt03, file="maf20_callrate95_2141704_snps.csv", row.names=F)
 write.table(filt03, file="maf20_callrate95_2141704_snps.txt", row.names = F, col.names = F, quote=F)
