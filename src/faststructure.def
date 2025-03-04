@@ -43,7 +43,7 @@ From: python:2.7.18
         git 
 
     # Install Python packages
-    pip2.7 install numpy scipy "cython<3"
+    pip2.7 install numpy scipy "cython<3" matplotlib
     
     # Set environment for installation
     install_dir=/usr/local/src/fastStructure
@@ -51,25 +51,40 @@ From: python:2.7.18
     export CFLAGS="-I${install_dir}/include"
     export LDFLAGS="-L${install_dir}/lib"
 
+    # Create executables
+
+    # Debug: Print the value of install_dir to verify it
+    echo "Installation directory is: $install_dir"
+
+    # Loop through each script name
+    for script in structure chooseK distruct; do
+        # Define the output file
+        output_file="/usr/local/bin/${script}"
+
+        # Create the script content
+        echo '#!/bin/sh' > "$output_file"
+
+        # Special handling for distruct (include MPLBACKEND export)
+        if [ "$script" = "distruct" ]; then
+            echo 'export MPLBACKEND=Agg' >> "$output_file"
+        fi
+
+        # Add the Python command
+        echo "python2.7 \"${install_dir}/${script}.py\" \"\$@\"" >> "$output_file"
+
+        # Make the script executable
+        chmod +x "$output_file"
+
+    done
+
     # Clone and build fastStructure
     git clone https://github.com/rajanil/fastStructure.git "${install_dir}"  # Clone directly into the correct location
     cd "${install_dir}/vars"
     python2.7 setup.py build_ext --inplace
     cd "${install_dir}"
     python2.7 setup.py build_ext --inplace
+    wget https://raw.githubusercontent.com/ignaciojci/variant-calling-pipeline/refs/heads/main/src/plot_marginal_likelihood.py
 
-    # Create executables
-    echo '#!/bin/bash
-    python2.7 ${install_dir}/structure.py "$@"' > /usr/local/bin/structure
-    chmod +x /usr/local/bin/structure
-    cp /usr/local/bin/structure /usr/local/bin/faststructure
-    echo '#!/bin/bash
-    python2.7 ${install_dir}/chooseK.py "$@"' > /usr/local/bin/chooseK
-    chmod +x /usr/local/bin/chooseK
-    echo '#!/bin/bash
-    export MPLBACKEND=Agg
-    python2.7 ${install_dir}/distruct.py "$@"' > /usr/local/bin/distruct
-    chmod +x /usr/local/bin/distruct
 
 %environment
     export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/src/fastStructure/lib
@@ -79,15 +94,37 @@ From: python:2.7.18
     export PYTHONPATH=/usr/local/lib/python2.7/site-packages:$PYTHONPATH
 
 %test
-    outdir=test_faststructure
+    echo "Testing fastStructure container..."
+
+    # Define paths
+    install_dir="/usr/local/src/fastStructure"
+    outdir="/tmp/test_results"  # Use /tmp for writable storage
+    input_file="${install_dir}/test/testdata"
+    output_prefix="testoutput"
+
     mkdir -p "$outdir"
-    for k in `seq 1 10`
-    do
-        echo Running test with K=$k...
-        structure -K $k --input="/usr/local/src/fastStructure/test/testdata" --output="${outdir}/testoutput_simple" --full --seed=100
+
+    # Run fastStructure for K = 1 to 10
+    for K in `seq 2 8`; do
+        echo "Running fastStructure for K=$K..."
+        structure -K "$K" --input="$input_file" --output="${outdir}/${output_prefix}_K" --full --seed=100
     done
-    chooseK --input="${outdir}/testoutput_simple"
-    distruct -K 5 --input="${outdir}/testoutput_simple" --output=${outdir}/testoutput_simple_distruct.svg
+
+    # Run chooseK
+    echo "Running chooseK..."
+    chooseK --input="${outdir}/${output_prefix}_K" > "${outdir}/chooseK_output.txt"
+    cat "${outdir}/chooseK_output.txt"
+
+    # Extract optimal K based on the first reported value
+    optimal_K=$(awk -F' = ' '/Model complexity that maximizes marginal likelihood/ {print $2}' "${outdir}/chooseK_output.txt")
+    optimal_K2=$(awk -F' = ' '/Model components used to explain structure in data/ {print $2}' "${outdir}/chooseK_output.txt")
+
+    # Run distruct for the best K
+    echo "Running distruct for K=$optimal_K..."
+    distruct -K "$optimal_K" --input="${outdir}/${output_prefix}_K" --output="${outdir}/${output_prefix}_K.${optimal_K}.svg"
+    distruct -K "$optimal_K2" --input="${outdir}/${output_prefix}_K" --output="${outdir}/${output_prefix}_K.${optimal_K2}.svg"
+
+    echo "Container test completed successfully!"
 
 %runscript
     exec "$@"
