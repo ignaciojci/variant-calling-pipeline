@@ -27,10 +27,13 @@ From: python:2.7.18
         ```
         distruct -K <K> --input=<output_prefix>
         ```
-
+        ```
+        plot_marginal_likelihood -K <K> --input=<output_prefix>
+        ```
     ## Notes:
     - The container installs fastStructure into `/usr/local/src/fastStructure`
-    - A wrapper script `faststructure`, `chooseK`, and `distruct` are provided for easier execution.
+    - A wrapper script `structure`, `chooseK`, and `distruct` are provided for easier execution.
+    - Added a function to plot marginal likelihood with `plot_marginal_likelihood` command.
 
 %post
     # Update and install dependencies
@@ -57,7 +60,7 @@ From: python:2.7.18
     echo "Installation directory is: $install_dir"
 
     # Loop through each script name
-    for script in structure chooseK distruct; do
+    for script in structure chooseK distruct plot_marginal_likelihood; do
         # Define the output file
         output_file="/usr/local/bin/${script}"
 
@@ -65,7 +68,7 @@ From: python:2.7.18
         echo '#!/bin/sh' > "$output_file"
 
         # Special handling for distruct (include MPLBACKEND export)
-        if [ "$script" = "distruct" ]; then
+        if [ "$script" = "distruct" ] || [ "$script" = "plot_marginal_likelihood" ]; then
             echo 'export MPLBACKEND=Agg' >> "$output_file"
         fi
 
@@ -104,8 +107,8 @@ From: python:2.7.18
 
     mkdir -p "$outdir"
 
-    # Run fastStructure for K = 1 to 10
-    for K in `seq 2 8`; do
+    # Run fastStructure for K = 2 to 7
+    for K in `seq 2 7`; do
         echo "Running fastStructure for K=$K..."
         structure -K "$K" --input="$input_file" --output="${outdir}/${output_prefix}_K" --full --seed=100
     done
@@ -123,6 +126,10 @@ From: python:2.7.18
     echo "Running distruct for K=$optimal_K..."
     distruct -K "$optimal_K" --input="${outdir}/${output_prefix}_K" --output="${outdir}/${output_prefix}_K.${optimal_K}.svg"
     distruct -K "$optimal_K2" --input="${outdir}/${output_prefix}_K" --output="${outdir}/${output_prefix}_K.${optimal_K2}.svg"
+    
+    # Plot marginal likelihood
+    echo "Plotting marginal likelihood over K..."
+    plot_marginal_likelihood --input="${outdir}/${output_prefix}_K" --output="${outdir}/${output_prefix}_K_likelihood.png"
 
     echo "Container test completed successfully!"
 
