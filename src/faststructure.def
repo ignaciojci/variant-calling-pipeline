@@ -11,13 +11,13 @@
           ```
         - Run the container with:
           ```
-          apptainer run faststructure.sif faststructure -K 3 --input=test/testdata --output=testoutput_simple --full --seed=100
+          apptainer run faststructure.sif structure -K 3 --input=test/testdata --output=testoutput_simple --full --seed=100
           ```
 
         ## Usage:
         - Run structure analysis:
           ```
-          faststructure -K 3 --input=<input_file> --output=<output_prefix> [options]
+          structure -K 3 --input=<input_file> --output=<output_prefix> [options]
           ```
         - Choose the best `K`:
           ```
@@ -60,9 +60,9 @@
 
         # Create executables
         echo '#!/bin/bash
-        python2.7 ${install_dir}/structure.py "$@"' > /usr/local/bin/faststructure
-        chmod +x /usr/local/bin/faststructure
-        cp /usr/local/bin/faststructure /usr/local/bin/structure
+        python2.7 ${install_dir}/structure.py "$@"' > /usr/local/bin/structure
+        chmod +x /usr/local/bin/structure
+        cp /usr/local/bin/structure /usr/local/bin/faststructure
         echo '#!/bin/bash
         python2.7 ${install_dir}/chooseK.py "$@"' > /usr/local/bin/chooseK
         chmod +x /usr/local/bin/chooseK
