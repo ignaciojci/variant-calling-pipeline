@@ -1,80 +1,81 @@
-Bootstrap: docker
-From: python:2.7.18
+    Bootstrap: docker
+    From: python:2.7.18
 
-%help
-    This container provides an environment for running fastStructure, a variational Bayesian framework for inferring population structure from large SNP genotype data.
-    
-    ## Installation:
-    - Build the container using:
-      ```
-      apptainer build faststructure.sif faststructure.def
-      ```
-    - Run the container with:
-      ```
-      apptainer run faststructure.sif faststructure -K 3 --input=test/testdata --output=testoutput_simple --full --seed=100
-      ```
+    %help
+        This container provides an environment for running fastStructure, a variational Bayesian framework for inferring population structure from large SNP genotype data.
+        
+        ## Installation:
+        - Build the container using:
+          ```
+          apptainer build faststructure.sif faststructure.def
+          ```
+        - Run the container with:
+          ```
+          apptainer run faststructure.sif faststructure -K 3 --input=test/testdata --output=testoutput_simple --full --seed=100
+          ```
 
-    ## Usage:
-    - Run structure analysis:
-      ```
-      faststructure -K 3 --input=<input_file> --output=<output_prefix> [options]
-      ```
-    - Choose the best `K`:
-      ```
-      chooseK --input=<output_prefix>
-      ```
-    - Visualize results:
-      ```
-      distruct -K <K> --input=<output_prefix>
-      ```
+        ## Usage:
+        - Run structure analysis:
+          ```
+          faststructure -K 3 --input=<input_file> --output=<output_prefix> [options]
+          ```
+        - Choose the best `K`:
+          ```
+          chooseK --input=<output_prefix>
+          ```
+        - Visualize results:
+          ```
+          distruct -K <K> --input=<output_prefix>
+          ```
 
-    ## Notes:
-    - The container installs fastStructure into `/usr/local/src/fastStructure`
-    - A wrapper script `faststructure`, `chooseK`, and `distruct` are provided for easier execution.
+        ## Notes:
+        - The container installs fastStructure into `/usr/local/src/fastStructure`
+        - A wrapper script `faststructure`, `chooseK`, and `distruct` are provided for easier execution.
 
-%post
-    # Update and install dependencies
-    apt-get update && apt-get install -y \
-        build-essential \
-        wget \
-        libgsl0-dev \
-        libgsl-dev \
-        python2.7-dev \
-        git 
+    %post
+        # Update and install dependencies
+        apt-get update && apt-get install -y \
+            build-essential \
+            wget \
+            libgsl0-dev \
+            libgsl-dev \
+            python2.7-dev \
+            git 
 
-    # Install Python packages
-    pip2.7 install numpy scipy "cython<3"
-    
-    # Set environment for installation
-    install_dir=/usr/local/src/fastStructure
-    export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${install_dir}/lib
-    export CFLAGS="-I${install_dir}/include"
-    export LDFLAGS="-L${install_dir}/lib"
+        # Install Python packages
+        pip2.7 install numpy scipy "cython<3"
+        
+        # Set environment for installation
+        install_dir=/usr/local/src/fastStructure
+        export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${install_dir}/lib
+        export CFLAGS="-I${install_dir}/include"
+        export LDFLAGS="-L${install_dir}/lib"
 
-    # Clone and build fastStructure
-    git clone https://github.com/rajanil/fastStructure.git "${install_dir}"  # Clone directly into the correct location
-    cd "${install_dir}/vars"
-    python2.7 setup.py build_ext --inplace
-    cd "${install_dir}"
-    python2.7 setup.py build_ext --inplace
+        # Clone and build fastStructure
+        git clone https://github.com/rajanil/fastStructure.git "${install_dir}"  # Clone directly into the correct location
+        cd "${install_dir}/vars"
+        python2.7 setup.py build_ext --inplace
+        cd "${install_dir}"
+        python2.7 setup.py build_ext --inplace
 
-    # Create executables
-    echo '#!/bin/bash
-    python2.7 ${install_dir}/structure.py "$@"' > /usr/local/bin/faststructure
-    chmod +x /usr/local/bin/faststructure
-    echo '#!/bin/bash
-    python2.7 ${install_dir}/chooseK.py "$@"' > /usr/local/bin/chooseK
-    chmod +x /usr/local/bin/chooseK
-    echo '#!/bin/bash
-    python2.7 ${install_dir}/distruct.py "$@"' > /usr/local/bin/distruct
-    chmod +x /usr/local/bin/distruct
+        # Create executables
+        echo '#!/bin/bash
+        python2.7 ${install_dir}/structure.py "$@"' > /usr/local/bin/faststructure
+        chmod +x /usr/local/bin/faststructure
+        cp /usr/local/bin/faststructure /usr/local/bin/structure
+        echo '#!/bin/bash
+        python2.7 ${install_dir}/chooseK.py "$@"' > /usr/local/bin/chooseK
+        chmod +x /usr/local/bin/chooseK
+        echo '#!/bin/bash
+        python2.7 ${install_dir}/distruct.py "$@"' > /usr/local/bin/distruct
+        chmod +x /usr/local/bin/distruct
 
-%environment
-    export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/src/fastStructure/lib
-    export PATH=/usr/bin:$PATH
-    export PATH=/usr/local/bin:$PATH
-    export PYTHONPATH=/usr/local/src/fastStructure/vars:$PYTHONPATH
-    export PYTHONPATH=/usr/local/lib/python2.7/site-packages:$PYTHONPATH
+    %environment
+        export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/src/fastStructure/lib
+        export PATH=/usr/bin:$PATH
+        export PATH=/usr/local/bin:$PATH
+        export PYTHONPATH=/usr/local/src/fastStructure/vars:$PYTHONPATH
+        export PYTHONPATH=/usr/local/lib/python2.7/site-packages:$PYTHONPATH
 
-%runscript
-    exec "$@"
+    %runscript
+        exec "$@"
