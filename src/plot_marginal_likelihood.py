@@ -14,10 +14,10 @@ def plot_marginal_likelihood(input_prefix, output_file):
     """Generate a plot of marginal likelihood vs. K based on fastStructure log files."""
     K_values = []
     marginal_likelihoods = []
-
+    
     # Scan for log files corresponding to different values of K
     for K in range(1, 11):  # Assuming K ranges from 1 to 10
-        log_file = f"{input_prefix}.{K}.log"
+        log_file = "{}.{}.log".format(input_prefix, K)  # Replaced f-string with .format()
         if os.path.exists(log_file):
             likelihood = extract_marginal_likelihood(log_file)
             if likelihood is not None:
@@ -25,9 +25,9 @@ def plot_marginal_likelihood(input_prefix, output_file):
                 marginal_likelihoods.append(likelihood)
     
     if not K_values:
-        print("No valid log files found. Check input prefix.")
+        print "No valid log files found. Check input prefix."  # Python 2 print statement
         return
-
+        
     # Plot results
     plt.figure(figsize=(8, 5))
     plt.plot(K_values, marginal_likelihoods, marker='o', linestyle='-')
@@ -36,7 +36,7 @@ def plot_marginal_likelihood(input_prefix, output_file):
     plt.title("Marginal Likelihood vs. K in fastStructure")
     plt.grid(True)
     plt.savefig(output_file)
-    print(f"Plot saved to {output_file}")
+    print "Plot saved to {}".format(output_file)  # Python 2 print statement
 
 def print_help():
     """Print detailed instructions on how to run the script."""
@@ -62,7 +62,7 @@ def print_help():
     - The resulting plot will be saved in the specified output file.
 
     """
-    print(help_text)
+    print help_text  # Python 2 print statement
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Plot marginal likelihood vs. K from fastStructure logs.", add_help=False)
