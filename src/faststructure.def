@@ -67,6 +67,7 @@ From: python:2.7.18
     python2.7 ${install_dir}/chooseK.py "$@"' > /usr/local/bin/chooseK
     chmod +x /usr/local/bin/chooseK
     echo '#!/bin/bash
+    export MPLBACKEND=Agg
     python2.7 ${install_dir}/distruct.py "$@"' > /usr/local/bin/distruct
     chmod +x /usr/local/bin/distruct
 
@@ -76,6 +77,17 @@ From: python:2.7.18
     export PATH=/usr/local/bin:$PATH
     export PYTHONPATH=/usr/local/src/fastStructure/vars:$PYTHONPATH
     export PYTHONPATH=/usr/local/lib/python2.7/site-packages:$PYTHONPATH
+
+%test
+    outdir=test_faststructure
+    mkdir -p "$outdir"
+    for k in `seq 1 10`
+    do
+        echo Running test with K=$k...
+        structure -K $k --input="/usr/local/src/fastStructure/test/testdata" --output="${outdir}/testoutput_simple" --full --seed=100
+    done
+    chooseK --input="${outdir}/testoutput_simple"
+    distruct -K 5 --input="${outdir}/testoutput_simple" --output=${outdir}/testoutput_simple_distruct.svg
 
 %runscript
     exec "$@"
